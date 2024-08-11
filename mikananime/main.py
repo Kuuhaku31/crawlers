@@ -12,7 +12,6 @@ import get_url
 # 入口程序
 def main():
     print(os.getcwd() + ": crawler start")
-    
 
 
 # 调用入口程序
