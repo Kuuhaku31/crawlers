@@ -9,6 +9,7 @@ def get_data(xml):
     root = etree.fromstring(xml)
 
     data_list = []  # 遍历每个 <item> 元素，并存到data
+    torrent_data = []
     namespaces = {"ns": "https://mikanani.me/0.1/"}  # 定义命名空间映射
     for item in root.xpath("//item"):
 
@@ -62,6 +63,13 @@ def get_data(xml):
 
         # 存储到data_list
         data_list.append(dic)
+        torrent_data.append(
+            {
+                "torrent_name": dic["title"],
+                "torrent_pub_date": dic["pub_date"],
+                "torrent_link": dic["enclosure_url"],
+            }
+        )
 
     # 返回数据
-    return data_list
+    return {"data_list": data_list, "torrent_data": torrent_data}
