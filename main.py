@@ -3,12 +3,11 @@
 
 import os
 import re
-import requests
-import fake_useragent
 from datetime import datetime
 
+import fake_useragent
 import ignore.url as url
-
+import requests
 
 # 请求头
 ua = fake_useragent.UserAgent()
@@ -16,7 +15,6 @@ ua = fake_useragent.UserAgent()
 
 # 保存数据
 def save_data(data_list, path):
-
     # 如果文件夹不存在，则创建
     if not os.path.exists(path):
         os.makedirs(path)
@@ -35,7 +33,6 @@ def save_data(data_list, path):
 
 # 下载种子文件
 def download_torrent(data_list, path):
-
     # 如果文件夹不存在，则创建
     if not os.path.exists(path):
         os.makedirs(path)
@@ -47,12 +44,7 @@ def download_torrent(data_list, path):
 
     for data in data_list:
         # 文件名（去除特殊字符）
-        file_name = (
-            data["torrent_name"]
-            + " pub_date - "
-            + data["torrent_pub_date"]
-            + ".torrent"
-        )
+        file_name = data["torrent_name"] + " pub_date - " + data["torrent_pub_date"] + ".torrent"
         file_name = re.sub(r"[\/:*?\"<>|\\]", "-", file_name)
         download_file = path + "/" + file_name
 
@@ -72,6 +64,7 @@ def download_torrent(data_list, path):
             print("download failed code: " + str(res.status_code))
             download_failed += 1
 
+    # 下载完成
     print(
         "download done, "
         + str(len(data_list))
@@ -109,6 +102,8 @@ def main():
 
     else:
         print("rss not found")
+
+    input("press any key to exit...")
 
 
 if __name__ == "__main__":
