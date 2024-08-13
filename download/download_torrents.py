@@ -32,16 +32,20 @@ def download_torrent(data_lists):
 
         # 下载文件
         print("downloading " + path)
-        res = requests.get(url, headers={"User-Agent": ua.random})
-        if res.status_code == 200:
-            with open(path, "wb") as f:
-                f.write(res.content)
-            print("download done")
-            downloade_ids.append(data["ID"])
-            download += 1
+        try:
+            res = requests.get(url, headers={"User-Agent": ua.random})
+            if res.status_code == 200:
+                with open(path, "wb") as f:
+                    f.write(res.content)
+                print("download done")
+                downloade_ids.append(data["ID"])
+                download += 1
+            else:
+                print("download failed code: " + str(res.status_code))
+                download_failed += 1
 
-        else:
-            print("download failed code: " + str(res.status_code))
+        except Exception as e:
+            print("download failed: " + str(e))
             download_failed += 1
 
     # 下载完成
