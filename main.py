@@ -2,24 +2,75 @@
 # 主入口
 
 import fake_useragent
-import requests
 
+import crawler.crawl as cl
 import databases.db as db
 import download.download_torrents as dt
 import ignore.url as url
 
 # 请求头
 ua = fake_useragent.UserAgent()
-resualt = None
+
+xml_save_path = "./ignore/data.xml"
+json_save_path = "./ignore/data.json"
 
 
-def exit():
+def help():
+    print("h: help")
+    print("q: exit")
+    print("d: download")
+    ...
+    return True
+
+
+def quit():
     return False
+
+
+def request():
+    inp = input("enter the name of the rss: ")
+    if inp in url.url_dic:
+        cl.crawl(url.url_dic[inp]["url"], xml_save_path)
+    else:
+        print("rss not found")
+    return True
+
+
+def parse():
+    inp = input("enter the name of the method: ")
+    if inp in url.url_dic:
+        rss_method = url.url_dic[inp]["method"]
+
+        with open(xml_save_path, "rb") as f:
+            xml = f.read()
+
+        resualt = rss_method(xml)
+        with open(json_save_path, "w") as f:
+            f.write(str(resualt))
+
+    else:
+        print("method not found")
+
+
+def insert():
+    with open(json_save_path) as f:
+        data = f.read()
+        db.insert_data(data)
+
+
+def download():
+    dt.download_torrent()
+    return True
 
 
 # 命令字典
 cmd_dic = {
-    "q": exit,
+    "h": help,  # 帮助
+    "q": quit,  # 退出
+    "r": request,  # 请求
+    "p": parse,  # 解析
+    "i": insert,  # 插入
+    "d": download,  # 下载
 }
 
 
@@ -46,9 +97,13 @@ def main():
         torrent_download_path = url.url_dic[name]["download_path"]
 
         # 获取 RSS 数据
+        cl.crawl(rss_url)
+
+        # 读取 RSS 数据
+        with open(cl.save_path, "rb") as f:
+            xml = f.read()
+
         # 根据不同的 RSS 网站，需要不同解析方法
-        print("getting response...")
-        xml = requests.get(rss_url, headers={"User-Agent": ua.random}).content
         list = rss_method(xml)
 
         # 下载种子文件

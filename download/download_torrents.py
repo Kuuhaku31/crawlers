@@ -53,3 +53,47 @@ def download_torrent(data_list, path):
 
     print(msg)
     print("=" * 80)
+
+
+# 传入的数据格式
+# [{
+#     "enclosureLink": "string",
+#     "savePath": "string",
+# },
+# ...]
+def download_torrent_(torent_datas):
+    print("-" * 80)
+    print("download start...")
+
+    total = 0
+    exist = 0
+    download = 0
+    download_failed = 0
+
+    for torent_data in torent_datas:
+        total += 1
+
+        url = torent_data["enclosureLink"]
+        path = torent_data["savePath"]
+
+        # 如果文件已经存在，则跳过
+        if os.path.exists(path):
+            exist += 1
+            continue
+
+        # 下载文件
+        print("downloading " + url)
+        res = requests.get(torent_data["enclosureLink"], headers={"User-Agent": ua.random})
+        if res.status_code == 200:
+            with open(path, "wb") as f:
+                f.write(res.content)
+            print("download done")
+            download += 1
+        else:
+            print("download failed code: " + str(res.status_code))
+            download_failed += 1
+
+    # 下载完成
+    msg = f"download done, {total} files found,{exist} files exist, {download} files downloaded, {download_failed} files failed"
+    print(msg)
+    print("=" * 80)

@@ -12,6 +12,7 @@ link varchar(255),
 enclosureLink varchar(255) not null,
 infoHash varchar(40) not null,
 pubDate varchar(255) not null
+savePath varchar(255)
 
 );
 
@@ -121,5 +122,5 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    # export_to_file("F:/test.csv")
+    export_to_file("F:/test.csv")
     pass
