@@ -1,8 +1,11 @@
 # 解析 XML 数据
 
 import json
+import re
 
 from lxml import etree
+
+import Log.save_log as sl
 
 """
 数据库表结构
@@ -10,6 +13,7 @@ from lxml import etree
 create table torrents(
 
 ID                      int primary key auto_increment,
+type                    varchar(255),
 title                   varchar(500) not null,
 description             text,
 link                    varchar(255),
@@ -22,9 +26,13 @@ savePath                varchar(255)
 
 """
 
+torrent_save_file = "D:/RSS/torrent/mikan/"
+
 
 # 解析 XML 数据，返回字典列表
 def get_data(xml, json_save_path):
+    print("-" * 80)
+    print("mikan is parsing XML data...")
     root = etree.fromstring(xml)
 
     mikan_items = []
@@ -75,11 +83,34 @@ def get_data(xml, json_save_path):
 
         # 打包到 torrent_datas
         torrent_data = {
+            "type": "mikan",
             "title": mikan_item["title"],
+            "description": mikan_item["description"],
+            "link": mikan_item["link"],
             "enclosureLink": mikan_item["enclosure_url"],
+            "infoHash": "",
             "pubDate": mikan_item["torrent_pubDate"],
         }
 
+        # 生成savePath
+        part01 = f"[{torrent_data["type"]}]"
+        length01 = len(part01)
+        part02 = f"[{torrent_data["title"]}]"
+        length02 = len(part02)
+        part03 = f"[{torrent_data["pubDate"]}]"
+        length03 = len(part03)
+
+        # 限制文件名长度
+        length = length01 + length02 + length03
+        if length > 255:
+            part02 = part02[: 255 - length01 - length03]
+        file_name = part01 + part02 + part03
+
+        # 处理文件名中的非法字符
+        file_name = re.sub(r"[\/:*?\"<>|\\]", "-", file_name)
+
+        # 保存路径
+        torrent_data["savePath"] = torrent_save_file + file_name + ".torrent"
         mikan_item["torrent_data"] = torrent_data
 
         # 打包到 mikan_items
@@ -87,4 +118,12 @@ def get_data(xml, json_save_path):
 
     # 保存到 json 文件
     with open(json_save_path, "w", encoding="utf-8") as file:
+        # 清空文件
+        file.truncate()
         json.dump(mikan_items, file, ensure_ascii=False, indent=4)
+
+    # 保存log
+    sl.save_log(mikan_items)
+
+    print("mikan done parsing XML data, " + str(len(mikan_items)) + " items found")
+    print("=" * 80)

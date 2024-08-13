@@ -10,6 +10,7 @@ xml_save_path = "./ignore/data.xml"
 json_save_path = "./ignore/data.json"
 
 
+# 帮助
 def help():
     print("h: help")
     print("q: exit")
@@ -18,10 +19,12 @@ def help():
     return True
 
 
+# 退出
 def quit():
     return False
 
 
+# 请求
 def request():
     inp = input("enter the name of the rss: ")
     if inp in url.url_dic:
@@ -31,6 +34,7 @@ def request():
     return True
 
 
+# 解析
 def parse():
     inp = input("enter the name of the method: ")
     if inp in url.url_dic:
@@ -45,14 +49,23 @@ def parse():
     return True
 
 
+# 插入数据库
 def insert():
-    with open(json_save_path) as f:
-        data = f.read()
-        db.insert_data(data)
+    db.insert_data(json_save_path)
+    return True
 
 
+# 下载
 def download():
-    dt.download_torrent()
+    data_lists = db.get_torrent_data_that_isnt_downloaded()
+    downloaded_id = dt.download_torrent(data_lists)
+    db.update_data_is_downloaded(downloaded_id)
+    return True
+
+
+# 打印数据库
+def print_database():
+    db.export_to_file("./ignore/data.csv")
     return True
 
 
@@ -64,6 +77,7 @@ cmd_dic = {
     "p": parse,  # 解析
     "i": insert,  # 插入
     "d": download,  # 下载
+    "pr": print_database,  # 打印数据库
 }
 
 
