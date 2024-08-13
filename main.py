@@ -9,16 +9,20 @@ import ignore.url as url
 
 config = init.config
 
-xml_save_path = "./ignore/data.xml"
-json_save_path = "./ignore/data.json"
+xml_buffrer_file = config["xml_buffer_file"]
+json_buffer_file = config["json_buffer_file"]
 
 
 # 帮助
 def help():
     print("h: help")
-    print("q: exit")
+    print("q: quit")
+    print("r: request")
+    print("p: parse")
+    print("c: clear")
+    print("i: insert")
     print("d: download")
-    ...
+    print("pr: print database")
     return True
 
 
@@ -30,8 +34,8 @@ def quit():
 # 请求
 def request():
     inp = input("enter the name of the rss: ")
-    if inp in url.url_dic:
-        cl.crawl(url.url_dic[inp]["url"], xml_save_path)
+    if inp in config["url"]:
+        cl.crawl(config["url"][inp], xml_buffrer_file)
     else:
         print("rss not found")
     return True
@@ -43,8 +47,8 @@ def parse():
     if inp in url.url_dic:
         parse_method = url.url_dic[inp]["method"]
 
-        with open(xml_save_path, "rb") as f:
-            parse_method(f.read(), json_save_path)
+        with open(xml_buffrer_file, "rb") as f:
+            parse_method(f.read(), json_buffer_file)
 
     else:
         print("method not found")
@@ -52,9 +56,22 @@ def parse():
     return True
 
 
+# 清除缓存
+def clear():
+    with open(json_buffer_file, "w") as f:
+        f.write("")
+
+    with open(xml_buffrer_file, "w") as f:
+        f.write("")
+
+    print("buffer cleared")
+
+    return True
+
+
 # 插入数据库
 def insert():
-    db.insert_data(json_save_path)
+    db.insert_data(json_buffer_file)
     return True
 
 
@@ -78,6 +95,7 @@ cmd_dic = {
     "q": quit,  # 退出
     "r": request,  # 请求
     "p": parse,  # 解析
+    "c": clear,  # 清除缓存
     "i": insert,  # 插入
     "d": download,  # 下载
     "pr": print_database,  # 打印数据库

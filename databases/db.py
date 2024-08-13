@@ -109,49 +109,49 @@ def insert_data(json_path):
         for json_data in json_datas:
             torrent_datas.append(json_data["torrent_data"])
 
-    conn = pymysql.connect(**connectdata)
-    cursor = conn.cursor()
+        conn = pymysql.connect(**connectdata)
+        cursor = conn.cursor()
 
-    total = 0
-    success = 0
-    exist = 0
-    failed = 0
+        total = 0
+        success = 0
+        exist = 0
+        failed = 0
 
-    for torrent_data in torrent_datas:
-        total += 1
+        for torrent_data in torrent_datas:
+            total += 1
 
-        # 如果数据已经存在，则跳过
-        sql = f"SELECT * FROM {tablename} WHERE link=%s AND enclosureLink=%s"
-        cursor.execute(sql, [torrent_data["link"], torrent_data["enclosureLink"]])
-        if cursor.fetchone():
-            exist += 1
+            # 如果数据已经存在，则跳过
+            sql = f"SELECT * FROM {tablename} WHERE link=%s AND enclosureLink=%s"
+            cursor.execute(sql, [torrent_data["link"], torrent_data["enclosureLink"]])
+            if cursor.fetchone():
+                exist += 1
 
-        # 否则插入数据
-        else:
-            sql = f"INSERT INTO {tablename} (type, title, description, link, enclosureLink, infoHash, pubDate, savePath) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            # 否则插入数据
+            else:
+                sql = f"INSERT INTO {tablename} (type, title, description, link, enclosureLink, infoHash, pubDate, savePath) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
-            cursor.execute(
-                sql,
-                [
-                    torrent_data["type"],
-                    torrent_data["title"],
-                    torrent_data["description"],
-                    torrent_data["link"],
-                    torrent_data["enclosureLink"],
-                    torrent_data["infoHash"],
-                    torrent_data["pubDate"],
-                    torrent_data["savePath"],
-                ],
-            )
-            conn.commit()
-            success += 1
-            print("insert success: " + torrent_data["title"])
+                cursor.execute(
+                    sql,
+                    [
+                        torrent_data["type"],
+                        torrent_data["title"],
+                        torrent_data["description"],
+                        torrent_data["link"],
+                        torrent_data["enclosureLink"],
+                        torrent_data["infoHash"],
+                        torrent_data["pubDate"],
+                        torrent_data["savePath"],
+                    ],
+                )
+                conn.commit()
+                success += 1
+                print("insert success: " + torrent_data["title"])
 
-    msg = f"insert done, {total} records in total, {success} records inserted, {exist} records exist, {failed} records failed"
-    print(msg)
+        msg = f"insert done, {total} records in total, {success} records inserted, {exist} records exist, {failed} records failed"
+        print(msg)
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
     print("=" * 80)
 

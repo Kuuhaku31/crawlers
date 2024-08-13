@@ -7,6 +7,7 @@ ua = fake_useragent.UserAgent()
 
 
 def crawl(url, save_path):
+    print("-" * 80)
     print("getting response...")
     xml = requests.get(url, headers={"User-Agent": ua.random}).content
     print("response received")

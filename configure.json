@@ -25,5 +25,7 @@
         "nyaa": {
             "torrent_save_path": "D:/RSS/torrent/nyaa/"
         }
-    }
+    },
+    "xml_buffer_file": "./ignore/data.xml",
+    "json_buffer_file": "./ignore/data.json"
 }

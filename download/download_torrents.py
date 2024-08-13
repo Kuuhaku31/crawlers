@@ -9,6 +9,7 @@ ua = fake_useragent.UserAgent()
 
 # 返回下载成功（或是已经下载）的ID列表
 def download_torrent(data_lists):
+    print("-" * 80)
     print("download start...")
 
     total = 0
