@@ -6,6 +6,22 @@ import pymysql
 # 创建数据库
 # create database dbtest default charset utf8 collate utf8_general_ci;
 
+"""
+数据库表结构
+
+create table torrents(
+
+title varchar(500) not null,
+description text,
+link varchar(255),
+enclosureLink varchar(255) not null,
+infoHash varchar(40) not null,
+pubDate varchar(255) not null
+
+);
+
+"""
+
 connect_data = {"host": "localhost", "user": "root", "password": "", "database": "dbtest", "charset": "utf8"}
 
 
@@ -15,7 +31,7 @@ def get_missing_id(cursor):
     sql = "select * from user where id=1"
     cursor.execute(sql)
     if not cursor.fetchone():
-        return 1
+        return 13
 
     else:
         # 查询缺失的 ID

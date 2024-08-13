@@ -40,26 +40,24 @@ def get_data(xml):
         "atom": "http://www.w3.org/2005/Atom",
     }
     for item in root.xpath("//item"):
-
         # 用字典存储信息
         dic = {}
 
         # 提取基本信息
         dic["title"] = item.find("title").text if item.find("title") is not None else ""
-        dic["link"] = item.find("link").text if item.find("link") is not None else ""
-        dic["guid"] = item.find("guid").text if item.find("guid") is not None else ""
-        dic["guid_isPermaLink"] = (
-            item.find("guid").get("isPermaLink")
-            if item.find("guid") is not None
+        dic["description"] = item.find("description").text if item.find("description") is not None else "None"
+        dic["link"] = item.find("guid").text if item.find("guid") is not None else ""
+        dic["enclosureLink"] = item.find("link").text if item.find("link") is not None else ""
+        dic["infoHash"] = (
+            item.find("nyaa:infoHash", namespaces).text
+            if item.find("nyaa:infoHash", namespaces) is not None
             else "None"
         )
-        dic["pubDate"] = (
-            item.find("pubDate").text if item.find("pubDate") is not None else ""
-        )
+        dic["pubDate"] = item.find("pubDate").text if item.find("pubDate") is not None else ""
+
+        dic["guid_isPermaLink"] = item.find("guid").get("isPermaLink") if item.find("guid") is not None else "None"
         dic["nyaa:seeders"] = (
-            item.find("nyaa:seeders", namespaces).text
-            if item.find("nyaa:seeders", namespaces) is not None
-            else "None"
+            item.find("nyaa:seeders", namespaces).text if item.find("nyaa:seeders", namespaces) is not None else "None"
         )
         dic["nyaa:leechers"] = (
             item.find("nyaa:leechers", namespaces).text
@@ -71,11 +69,7 @@ def get_data(xml):
             if item.find("nyaa:downloads", namespaces) is not None
             else "None"
         )
-        dic["nyaa:infoHash"] = (
-            item.find("nyaa:infoHash", namespaces).text
-            if item.find("nyaa:infoHash", namespaces) is not None
-            else "None"
-        )
+
         dic["nyaa:categoryId"] = (
             item.find("nyaa:categoryId", namespaces).text
             if item.find("nyaa:categoryId", namespaces) is not None
@@ -87,9 +81,7 @@ def get_data(xml):
             else "None"
         )
         dic["nyaa:size"] = (
-            item.find("nyaa:size", namespaces).text
-            if item.find("nyaa:size", namespaces) is not None
-            else "None"
+            item.find("nyaa:size", namespaces).text if item.find("nyaa:size", namespaces) is not None else "None"
         )
         dic["nyaa:comments"] = (
             item.find("nyaa:comments", namespaces).text
@@ -97,19 +89,10 @@ def get_data(xml):
             else "None"
         )
         dic["nyaa:trusted"] = (
-            item.find("nyaa:trusted", namespaces).text
-            if item.find("nyaa:trusted", namespaces) is not None
-            else "None"
+            item.find("nyaa:trusted", namespaces).text if item.find("nyaa:trusted", namespaces) is not None else "None"
         )
         dic["nyaa:remake"] = (
-            item.find("nyaa:remake", namespaces).text
-            if item.find("nyaa:remake", namespaces) is not None
-            else "None"
-        )
-        dic["description"] = (
-            item.find("description").text
-            if item.find("description") is not None
-            else "None"
+            item.find("nyaa:remake", namespaces).text if item.find("nyaa:remake", namespaces) is not None else "None"
         )
 
         # 存储到data_list
@@ -118,7 +101,7 @@ def get_data(xml):
             {
                 "torrent_name": dic["title"],
                 "torrent_pub_date": dic["pubDate"],
-                "torrent_link": dic["link"],
+                "torrent_link": dic["enclosureLink"],
             }
         )
 

@@ -12,24 +12,15 @@ def get_data(xml):
     torrent_data = []
     namespaces = {"ns": "https://mikanani.me/0.1/"}  # 定义命名空间映射
     for item in root.xpath("//item"):
-
         # 用字典存储信息
         dic = {}
 
         # 提取基本信息
         dic["guid"] = item.find("guid").text if item.find("guid") is not None else ""
-        dic["guid_isPermaLink"] = (
-            item.find("guid").get("isPermaLink")
-            if item.find("guid") is not None
-            else "None"
-        )
+        dic["guid_isPermaLink"] = item.find("guid").get("isPermaLink") if item.find("guid") is not None else "None"
         dic["link"] = item.find("link").text if item.find("link") is not None else ""
         dic["title"] = item.find("title").text if item.find("title") is not None else ""
-        dic["description"] = (
-            item.find("description").text
-            if item.find("description") is not None
-            else "None"
-        )
+        dic["description"] = item.find("description").text if item.find("description") is not None else "None"
 
         # 提取 <torrent> 内的信息，需要处理命名空间
         torrent_element = item.find("ns:torrent", namespaces)
@@ -44,7 +35,7 @@ def get_data(xml):
                 if torrent_element.find("ns:contentLength", namespaces) is not None
                 else "None"
             )
-            dic["pub_date"] = (
+            dic["pubDate"] = (
                 torrent_element.find("ns:pubDate", namespaces).text
                 if torrent_element.find("ns:pubDate", namespaces) is not None
                 else "None"
@@ -55,19 +46,21 @@ def get_data(xml):
         if enclosure is not None:
             dic["enclosure_type"] = enclosure.get("type", "")
             dic["enclosure_length"] = enclosure.get("length", "")
-            dic["enclosure_url"] = enclosure.get("url", "")
+            dic["enclosureLink"] = enclosure.get("url", "")
         else:
             dic["enclosure_type"] = "None"
             dic["enclosure_length"] = "None"
             dic["enclosure_url"] = "None"
+
+        dic["infoHash"] = ""
 
         # 存储到data_list
         data_list.append(dic)
         torrent_data.append(
             {
                 "torrent_name": dic["title"],
-                "torrent_pub_date": dic["pub_date"],
-                "torrent_link": dic["enclosure_url"],
+                "torrent_pub_date": dic["pubDate"],
+                "torrent_link": dic["enclosureLink"],
             }
         )
 

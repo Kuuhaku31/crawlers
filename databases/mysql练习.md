@@ -18,9 +18,13 @@ SHOW DATABASES;
 ### 3. **创建数据库**
 ```sql
 CREATE DATABASE 数据库名;
+
+CREATE DATABASE RSSlog default
+CHARACTER SET utf8
+collate utf8_general_ci;
 ```
 - **说明**：创建一个新的数据库。
-
+use
 ### 4. **使用某个数据库**
 ```sql
 USE 数据库名;
