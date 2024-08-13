@@ -6,6 +6,7 @@ import re
 from lxml import etree
 
 import Log.save_log as sl
+import mikananime.__init__ as init
 
 """
 数据库表结构
@@ -26,7 +27,9 @@ savePath                varchar(255)
 
 """
 
-torrent_save_file = "D:/RSS/torrent/mikan/"
+mode_mikan_config = init.mode_mikan_config
+
+torrent_save_path = mode_mikan_config["torrent_save_path"]
 
 
 # 解析 XML 数据，返回字典列表
@@ -110,7 +113,7 @@ def get_data(xml, json_save_path):
         file_name = re.sub(r"[\/:*?\"<>|\\]", "-", file_name)
 
         # 保存路径
-        torrent_data["savePath"] = torrent_save_file + file_name + ".torrent"
+        torrent_data["savePath"] = torrent_save_path + file_name + ".torrent"
         mikan_item["torrent_data"] = torrent_data
 
         # 打包到 mikan_items

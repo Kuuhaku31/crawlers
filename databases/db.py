@@ -24,11 +24,16 @@ import json
 
 import pymysql
 
-databasename = "rsslog"
-tablename = "torrents"
-username = "root"
-password = ""
-connectdata = {"host": "localhost", "user": username, "password": password, "database": databasename, "charset": "utf8"}
+import databases.__init__ as init
+
+connectdata = {
+    "host": init.mysql_config["host"],
+    "user": init.mysql_config["user"],
+    "password": init.mysql_config["password"],
+    "database": init.mysql_config["database"],
+    "charset": init.mysql_config["charset"],
+}
+tablename = init.mysql_config["tablename"]
 
 
 # 从数据库获取数据
@@ -197,5 +202,5 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    export_to_file("F:/test.csv")
+    # export_to_file("F:/test.csv")
     pass

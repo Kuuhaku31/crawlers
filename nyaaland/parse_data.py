@@ -6,6 +6,7 @@ import re
 from lxml import etree
 
 import Log.save_log as sl
+import nyaaland.__init__ as init
 
 """
 <item>
@@ -29,8 +30,9 @@ import Log.save_log as sl
 </item>
 """
 
+mode_nyaa_config = init.mode_nyaa_config
 # 保存路径
-torrent_save_file = "D:/RSS/torrent/mikan/"
+torrent_save_path = mode_nyaa_config["torrent_save_path"]
 
 
 # 针对 nyaa.land 的 RSS 数据解析
@@ -121,7 +123,7 @@ def get_data(xml, json_save_path):
         file_name = re.sub(r"[\/:*?\"<>|\\]", "-", file_name)
 
         # 保存路径
-        torrent_data["savePath"] = torrent_save_file + file_name + ".torrent"
+        torrent_data["savePath"] = torrent_save_path + file_name + ".torrent"
 
         # 添加到字典
         nyaa_item["torrent_data"] = torrent_data

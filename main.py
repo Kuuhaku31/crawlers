@@ -1,10 +1,13 @@
 # main.py
 # 主入口
 
+import __init__ as init
 import crawler.crawl as cl
 import databases.db as db
 import download.download_torrents as dt
 import ignore.url as url
+
+config = init.config
 
 xml_save_path = "./ignore/data.xml"
 json_save_path = "./ignore/data.json"
