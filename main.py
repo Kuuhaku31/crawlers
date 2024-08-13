@@ -10,6 +10,26 @@ import ignore.url as url
 
 # 请求头
 ua = fake_useragent.UserAgent()
+resualt = None
+
+
+def exit():
+    return False
+
+
+# 命令字典
+cmd_dic = {
+    "q": exit,
+}
+
+
+def update():
+    cmd = input(">> ")
+    if cmd in cmd_dic:
+        return cmd_dic[cmd]
+    else:
+        print("this command is not found")
+        return True
 
 
 # 入口程序
