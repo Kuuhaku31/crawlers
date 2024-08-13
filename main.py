@@ -98,7 +98,7 @@ def main():
         # 储存 RSS 数据
         save_data(list["data_list"], data_saveing_path)
         save_log.save_log(list["data_list"])
-        save_log.save_log_xml(xml)
+        # save_log.save_log_xml(xml)
 
         # 下载种子文件
         download_torrent(list["torrent_data"], torrent_download_path)
