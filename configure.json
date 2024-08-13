@@ -1,0 +1,18 @@
+{
+    "mysql": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": ""
+    },
+    "url": {
+        "mikan": "https://mikanani.me/RSS/MyBangumi?token=xzis5q9HJHqZudKJbY7KL2bci%2bAmLEJ9URet6OgIaoQ%3d",
+        "nyaa": "https://nyaa.land/?page=rss",
+        "nyaa2.5": "https://nyaa.land/?page=rss&q=2.5%E6%AC%A1%E5%85%83&c=0_0&f=0",
+        "nyaa-flac": "https://nyaa.land/?page=rss&c=2_1",
+        "nyaa-keion": "https://nyaa.land/?page=rss&q=%E3%81%B5%E3%81%A4%E3%81%86%E3%81%AE%E8%BB%BD%E9%9F%B3%E9%83%A8&c=0_0&f=0"
+    },
+    "log": {
+        "log_path": "F:/logs/"
+    }
+}

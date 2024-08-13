@@ -123,7 +123,7 @@ def get_data(xml, json_save_path):
         json.dump(mikan_items, file, ensure_ascii=False, indent=4)
 
     # 保存log
-    sl.save_log(mikan_items)
+    sl.log(mikan_items)
 
     print("mikan done parsing XML data, " + str(len(mikan_items)) + " items found")
     print("=" * 80)

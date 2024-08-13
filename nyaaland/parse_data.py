@@ -136,7 +136,7 @@ def get_data(xml, json_save_path):
         json.dump(nyaa_items, file, ensure_ascii=False, indent=4)
 
     # 保存到log
-    # sl.save_data(nyaa_items)
+    sl.log(nyaa_items)
 
     print("nyaa data parsed, " + str(len(nyaa_items)) + " items found")
     print("-" * 80)
