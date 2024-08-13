@@ -7,8 +7,8 @@ from datetime import datetime
 import fake_useragent
 import requests
 
+import databases.db as db
 import ignore.url as url
-import Log.save_log as save_log
 
 # 请求头
 ua = fake_useragent.UserAgent()
@@ -45,7 +45,13 @@ def download_torrent(data_list, path):
 
     for data in data_list:
         # 文件名（去除特殊字符）
-        file_name = data["torrent_name"] + " pub_date - " + data["torrent_pub_date"] + ".torrent"
+        file_title = data["torrent_name"]
+
+        # title 太长时截取
+        if len(file_title) > 150:
+            file_title = file_title[:150]
+
+        file_name = file_title + " pub_date - " + data["torrent_pub_date"] + ".torrent"
         file_name = re.sub(r"[\/:*?\"<>|\\]", "-", file_name)
         download_file = path + "/" + file_name
 
@@ -66,15 +72,12 @@ def download_torrent(data_list, path):
             download_failed += 1
 
     # 下载完成
-    print(
-        "download done, "
-        + str(len(data_list))
-        + " files found, "
-        + str(download)
-        + " files downloaded, "
-        + str(download_failed)
-        + " files failed"
-    )
+
+    # 打印下载结果
+    msg = f"download done, {len(data_list)} files found, {download} files downloaded, {download_failed} files failed"
+
+    print(msg)
+    print("=" * 80)
 
 
 # 入口程序
@@ -91,17 +94,19 @@ def main():
         torrent_download_path = url.url_dic[name]["download_path"]
 
         # 获取 RSS 数据
+        # 根据不同的 RSS 网站，需要不同解析方法
         print("getting response...")
         xml = requests.get(rss_url, headers={"User-Agent": ua.random}).content
         list = rss_method(xml)
 
-        # 储存 RSS 数据
-        save_data(list["data_list"], data_saveing_path)
-        save_log.save_log(list["data_list"])
-        # save_log.save_log_xml(xml)
-
         # 下载种子文件
         download_torrent(list["torrent_data"], torrent_download_path)
+
+        # 录入数据库
+        db.insert_data(list["data_list"])
+
+        # 导出数据到文件
+        db.export_to_file(data_saveing_path + "/data.csv")
 
     else:
         print("rss not found")
