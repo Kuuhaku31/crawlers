@@ -1,12 +1,32 @@
 # data_list
 
+import datetime
 import json
+import os
 
 import lxml.etree as et
 
 # 日志存储
 path = "F:/log.json"
 path_xml = "F:/log.xml"
+
+
+# 保存数据
+def save_data(data_list, path):
+    # 如果文件夹不存在，则创建
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    save_path = path + "/" + date + ".txt"
+
+    print("saving data to " + save_path + "...")
+
+    with open(save_path, "w", encoding="utf-8") as f:
+        for data in data_list:
+            for key in data:
+                f.write(key + ": " + data[key] + "\n")
+            f.write("-" * 80 + "\n")
 
 
 # data_list 是一个列表，其中包含了所有的数据字典
