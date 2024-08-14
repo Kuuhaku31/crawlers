@@ -77,7 +77,8 @@ def insert():
 
 # 下载
 def download():
-    data_lists = db.get_torrent_data_that_isnt_downloaded()
+    condition = input("enter the condition: ")
+    data_lists = db.get_download_lists(condition)
     downloaded_id = dt.download_torrent(data_lists)
     db.update_data_is_downloaded(downloaded_id)
     return True
@@ -85,7 +86,8 @@ def download():
 
 # 打印数据库
 def print_database():
-    db.export_to_file("./ignore/data.csv")
+    condition = input("enter the condition: ")
+    db.export_to_file("./ignore/data.csv", condition)
     return True
 
 

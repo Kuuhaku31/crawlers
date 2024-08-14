@@ -37,9 +37,9 @@ tablename = init.mysql_config["tablename"]
 
 
 # 从数据库获取数据
-def get_torrent_data_that_isnt_downloaded():
+def get_download_lists(condition):
     print("-" * 80)
-    print("start get torrent data that isn't downloaded...")
+    print(f"start get torrent data where {condition}")
 
     data_lists = []
 
@@ -49,7 +49,7 @@ def get_torrent_data_that_isnt_downloaded():
         cursor = conn.cursor()
 
         # 查询所有未下载的数据的下载链接和保存路径
-        sql = f"SELECT ID, enclosureLink, savePath FROM {tablename} WHERE isDownloaded = 0"
+        sql = f"SELECT ID, enclosureLink, savePath FROM {tablename} WHERE {condition} ;"
         cursor.execute(sql)
         rows = cursor.fetchall()
 
@@ -157,14 +157,15 @@ def insert_data(json_path):
 
 
 # 导出数据到文件
-def export_to_file(file_path):
+def export_to_file(file_path, condition):
     print("-" * 80)
     print("start export data...")
 
     conn = pymysql.connect(**connectdata)
     cursor = conn.cursor()
 
-    sql = f"SELECT * FROM {tablename}"
+    condition = "1=1" if condition == "" else condition
+    sql = f"SELECT * FROM {tablename} WHERE {condition} ;"
 
     try:
         cursor.execute(sql)
