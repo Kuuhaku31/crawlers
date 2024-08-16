@@ -148,7 +148,8 @@ def get_data(xml, json_save_path):
         with open(json_save_path, "w", encoding="utf-8") as file:
             # 清空文件
             file.truncate()
-            json.dump(nyaa_items, file, ensure_ascii=False, indent=4)
+            json_data = {"items": nyaa_items}
+            json.dump(json_data, file, ensure_ascii=False, indent=4)
 
         # 保存到log
         sl.log(nyaa_items)

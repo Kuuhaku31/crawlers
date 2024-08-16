@@ -37,7 +37,8 @@ json_buffer_file = config["json_buffer_file"]
 
 db = databases.db.DB()
 db.connect("rsslog")
-db.set_tablename("mikantorrents")
+db.set_tablename("torrents")
+# db.set_tablename("mikantorrents")
 
 
 def mikanh():

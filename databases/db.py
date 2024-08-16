@@ -165,11 +165,11 @@ class DB:
 
                 self.cursor.execute(sql, data)
                 self.conn.commit()
-                print("insert success: " + str(data))
+                print("insert success: " + data[2])
                 success += 1
 
             except pymysql.MySQLError as e:
-                print("insert failed: " + str(data))
+                print("insert failed: " + data[2])
                 print(f"Error: {e}")
                 faileds.append(data)
                 failed += 1
@@ -300,12 +300,12 @@ class DB:
         if condition == "":
             condition = "1=1"
 
-        sql = f"SELECT ID FROM {self.tablename} WHERE %s ;"
+        sql = f"SELECT ID FROM {self.tablename} WHERE {condition} ;"
         print("-" * 80)
         print("start select id where condition: " + condition)
 
         try:
-            self.cursor.execute(sql, [condition])
+            self.cursor.execute(sql)
             ids = self.cursor.fetchall()
 
         except pymysql.MySQLError as e:
