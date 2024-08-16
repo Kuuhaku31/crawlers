@@ -104,7 +104,7 @@ def insert_data(json_path):
     print("start insert data...")
 
     with open(json_path, encoding="utf-8") as f:
-        json_datas = json.load(f)
+        json_datas = json.load(f)["items"]
         torrent_datas = []
         for json_data in json_datas:
             torrent_datas.append(json_data["torrent_data"])

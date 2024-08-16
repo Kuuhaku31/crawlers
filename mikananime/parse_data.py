@@ -27,13 +27,13 @@ savePath                varchar(255)
 
 """
 
-mode_mikan_config = init.mode_mikan_config
+mode_mikan_config = init.config["modes"]["mikan"]
 
 torrent_save_path = mode_mikan_config["torrent_save_path"]
 
 
 # 解析 XML 数据，返回字典列表
-def get_data(xml, json_save_path):
+def get_data(xml, json_save_path, type="mikan"):
     print("-" * 80)
     print("mikan is parsing XML data...")
 
@@ -90,7 +90,7 @@ def get_data(xml, json_save_path):
 
             # 打包到 torrent_datas
             torrent_data = {
-                "type": "mikan",
+                "type": type,
                 "title": mikan_item["title"],
                 "description": mikan_item["description"],
                 "link": mikan_item["link"],
@@ -125,9 +125,10 @@ def get_data(xml, json_save_path):
 
         # 保存到 json 文件
         with open(json_save_path, "w", encoding="utf-8") as file:
+            json_mikan = {"items": mikan_items}
             # 清空文件
             file.truncate()
-            json.dump(mikan_items, file, ensure_ascii=False, indent=4)
+            json.dump(json_mikan, file, ensure_ascii=False, indent=4)
 
         # 保存log
         sl.log(mikan_items)

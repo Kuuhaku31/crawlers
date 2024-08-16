@@ -1,6 +1,8 @@
 # main.py
 # 主入口
 
+from asyncio import sleep
+
 import __init__ as init
 import crawler.crawl as cl
 import databases.db as db
@@ -11,6 +13,36 @@ config = init.config
 
 xml_buffrer_file = config["xml_buffer_file"]
 json_buffer_file = config["json_buffer_file"]
+
+
+def mikanh():
+    homeurl = "https://mikanani.me/Home/Classic/"
+    page = 399
+
+    errorpage = []
+
+    while page > 0:
+        print("page: " + str(page))
+
+        try:
+            rurl = homeurl + str(page)
+            cl.crawl(rurl, xml_buffrer_file)
+            parse_method = url.parse_methods_dic["mikanh"]
+
+            with open(xml_buffrer_file, "rb") as f:
+                parse_method(f.read(), json_buffer_file, "mikanh")
+
+            db.insert_data(json_buffer_file)
+
+            page -= 1
+
+        except Exception as e:
+            print(e)
+            print("error, retrying...")
+            sleep(1000)
+            errorpage.append(page)
+            page -= 1
+            continue
 
 
 # 帮助
@@ -126,3 +158,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # mikanh()
+    # db.insert_data(json_buffer_file)
