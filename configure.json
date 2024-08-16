@@ -4,9 +4,15 @@
         "port": 3306,
         "user": "root",
         "password": "",
-        "database": "rsslog",
         "charset": "utf8",
-        "tablename": "torrents"
+        "databases": {
+            "rsslog": {
+                "tables": [
+                    "torrents",
+                    "mikantorrents"
+                ]
+            }
+        }
     },
     "url": {
         "mikan": "https://mikanani.me/RSS/MyBangumi?token=xzis5q9HJHqZudKJbY7KL2bci%2bAmLEJ9URet6OgIaoQ%3d",
