@@ -3,205 +3,388 @@
 """
 数据库表结构
 
-create table torrents(
+create table mikantorrents(
 
-ID int primary key auto_increment,
-type varchar(255),
-title varchar(500) not null,
+id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+type varchar(2048),
+pubDate varchar(2048),
+title varchar(2048),
 description text,
-link varchar(255),
-enclosureLink varchar(255) not null,
-infoHash varchar(40) not null,
-pubDate varchar(255) not null
-savePath varchar(255)
+link varchar(2048),
+enclosureLink varchar(2048) not null,
+infoHash varchar(2048),
+savePath varchar(2048),
+isDownloaded bool default 0
 
 );
 
 """
 
 import csv
-import json
 
 import pymysql
 
-import databases.__init__ as init
-
-connectdata = {
-    "host": init.mysql_config["host"],
-    "user": init.mysql_config["user"],
-    "password": init.mysql_config["password"],
-    "database": init.mysql_config["database"],
-    "charset": init.mysql_config["charset"],
-}
-tablename = init.mysql_config["tablename"]
+import __init__ as init
 
 
-# 从数据库获取数据
-def get_download_lists(condition):
-    print("-" * 80)
-    print(f"start get torrent data where {condition}")
+# 数据库操作类
+class DB:
+    # 构造函数
+    def __init__(self):
+        self.mysql = init.mysql_config
 
-    data_lists = []
+        # 数据库连接参数
+        self.host = self.mysql["host"]
+        self.port = self.mysql["port"]
+        self.user = self.mysql["user"]
+        self.password = self.mysql["password"]
+        self.charset = self.mysql["charset"]
+        self.databasename = ""
+        self.tablename = ""
 
-    try:
-        # 连接数据库
-        conn = pymysql.connect(**connectdata)
-        cursor = conn.cursor()
+        # 数据库链接
+        self.conn = None
+        self.cursor = None
 
-        # 查询所有未下载的数据的下载链接和保存路径
-        sql = f"SELECT ID, enclosureLink, savePath FROM {tablename} WHERE {condition} ;"
-        cursor.execute(sql)
-        rows = cursor.fetchall()
+    # 析构函数
+    def __del__(self):
+        self.close()
 
-        for row in rows:
-            data_lists.append({"ID": row[0], "enclosureLink": row[1], "savePath": row[2]})
+    # 连接数据库
+    def connect(self, database):
+        if self.databasename:
+            print("already connected to" + self.host + "." + self.databasename)
+            return
 
-        print("get data done")
-        print(f"get {len(data_lists)} records")
+        if database in self.mysql["databases"]:
+            self.databasename = database
+            self.tablename = ""
 
-    except pymysql.MySQLError as e:
-        print(f"Error: {e}")
+            print("connecting...")
+            self.conn = pymysql.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                password=self.password,
+                database=self.databasename,
+                charset=self.charset,
+            )
+            self.cursor = self.conn.cursor()
+            print(f"connected to {self.host}.{self.databasename} (port: {self.port})")
 
-    finally:
-        cursor.close()
-        conn.close()
+        else:
+            print("database not found")
 
-    print("=" * 80)
+    # 设置表
+    def set_tablename(self, table):
+        if not table:
+            self.tablename = ""
+            print("table cleared")
+            return
 
-    return data_lists
+        if not self.databasename:
+            print("please connect to the database first")
+            return
 
+        if table in self.mysql["databases"][self.databasename]["tables"]:
+            self.tablename = table
+            print("set table " + table)
 
-# 修改数据
-def update_data_is_downloaded(downloaded_ids):
-    print("-" * 80)
-    print("start update data...")
+        else:
+            print("table not found")
 
-    total = 0
+    # 关闭数据库
+    def close(self):
+        if self.databasename:
+            self.databasename = ""
+            self.tablename = ""
 
-    if downloaded_ids is not None:
-        conn = pymysql.connect(**connectdata)
-        cursor = conn.cursor()
+            self.cursor.close()
+            self.conn.close()
 
-        for id in downloaded_ids:
-            total += 1
-            sql = f"UPDATE {tablename} SET isDownloaded=1 WHERE ID=%s"
-            cursor.execute(sql, [id])
-            conn.commit()
+            print("disconnected from " + self.host + "." + self.databasename)
 
-        cursor.close()
-        conn.close()
+    # 插入数据
+    def insert(self, column, datas):
+        # 如果没有连接数据库，则返回
+        if not self.databasename:
+            print("please connect to the database first")
+            return
 
-    else:
-        print("no data need to be updated")
+        if not self.tablename:
+            print("please set the table first")
+            return
 
-    print("update done, " + str(total) + " records updated")
-    print("=" * 80)
+        # 如果data为空，则返回
+        if column == [] or datas == []:
+            print("column or data is empty")
+            return
 
+        # 生成sql语句
+        columns = ",".join(column)
+        values = ",".join(["%s"] * len(datas))
+        sql = f"INSERT INTO {self.tablename} ({columns}) VALUES ({values}) ;"
 
-# 插入数据
-def insert_data(json_path):
-    print("-" * 80)
-    print("start insert data...")
-
-    with open(json_path, encoding="utf-8") as f:
-        json_datas = json.load(f)["items"]
-        torrent_datas = []
-        for json_data in json_datas:
-            torrent_datas.append(json_data["torrent_data"])
-
-        conn = pymysql.connect(**connectdata)
-        cursor = conn.cursor()
+        print("-" * 80)
+        print("start insert data where column: " + columns)
 
         total = 0
         success = 0
-        exist = 0
         failed = 0
+        faileds = []
 
-        for torrent_data in torrent_datas:
+        for data in datas:
             total += 1
 
-            # 如果数据已经存在，则跳过
-            sql = f"SELECT * FROM {tablename} WHERE link=%s AND enclosureLink=%s"
-            cursor.execute(sql, [torrent_data["link"], torrent_data["enclosureLink"]])
-            if cursor.fetchone():
-                exist += 1
-
-            # 否则插入数据
-            else:
-                sql = f"INSERT INTO {tablename} (type, title, description, link, enclosureLink, infoHash, pubDate, savePath) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-
-                cursor.execute(
-                    sql,
-                    [
-                        torrent_data["type"],
-                        torrent_data["title"],
-                        torrent_data["description"],
-                        torrent_data["link"],
-                        torrent_data["enclosureLink"],
-                        torrent_data["infoHash"],
-                        torrent_data["pubDate"],
-                        torrent_data["savePath"],
-                    ],
-                )
-                conn.commit()
+            try:
+                self.cursor.execute(sql, data)
+                self.conn.commit()
+                print("insert success: " + data)
                 success += 1
-                print("insert success: " + torrent_data["title"])
 
-        msg = f"insert done, {total} records in total, {success} records inserted, {exist} records exist, {failed} records failed"
-        print(msg)
+            except pymysql.MySQLError as e:
+                print("insert failed: " + data)
+                print(f"Error: {e}")
+                faileds.append(data)
+                failed += 1
 
-        cursor.close()
-        conn.close()
+        print(f"insert done, {total} records in total, {success} records inserted, {failed} records failed")
+        print("=" * 80)
 
-    print("=" * 80)
+        return faileds
 
+    # 删除数据
+    def dilByID(self, ids):
+        # 如果没有连接数据库，则返回
+        if not self.databasename:
+            print("please connect to the database first")
+            return
 
-# 导出数据到文件
-def export_to_file(file_path, condition):
-    print("-" * 80)
-    print("start export data...")
+        if not self.tablename:
+            print("please set the table first")
+            return
 
-    conn = pymysql.connect(**connectdata)
-    cursor = conn.cursor()
+        # 如果ids为空，则返回
+        if not ids:
+            print("ids is empty")
+            return
 
-    condition = "1=1" if condition == "" else condition
-    sql = f"SELECT * FROM {tablename} WHERE {condition} ;"
+        # 生成sql语句
+        sql = f"DELETE FROM {self.tablename} WHERE ID=%s ;"
 
-    try:
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-        headers = [i[0] for i in cursor.description]
+        print("-" * 80)
+        print("start delete data...")
 
-        with open(file_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(headers)
-            writer.writerows(rows)
+        total = 0
+        success = 0
+        failed = 0
+        faileds = []
 
-        print(f"data has been exported to {file_path}")
+        for id in ids:
+            total += 1
 
-    except pymysql.MySQLError as e:
-        print(f"Error: {e}")
+            try:
+                self.cursor.execute(sql, [id])
+                self.conn.commit()
+                print("delete success: " + id)
+                success += 1
 
-    finally:
-        cursor.close()
-        conn.close()
+            except pymysql.MySQLError as e:
+                print("delete failed: " + id)
+                print(f"Error: {e}")
+                faileds.append(id)
+                failed += 1
 
-    print("=" * 80)
+        print(f"delete done, {total} records in total, {success} records deleted, {failed} records failed")
+        print("=" * 80)
 
+        return faileds
 
-def main():
-    data = {
-        "title": "ad",
-        "description": "ttt",
-        "link": "777",
-        "enclosureLink": "777",
-        "infoHash": "444",
-        "pubDate": "555",
-    }
-    insert_data(data)
+    # 修改数据
+
+    def update(self, columns, datas, ids):
+        # 如果没有连接数据库，则返回
+        if not self.databasename:
+            print("please connect to the database first")
+            return
+
+        if not self.tablename:
+            print("please set the table first")
+            return
+
+        # 如果columns, datas或ids为空，则返回
+        if not columns or not datas or not ids:
+            print("columns, datas or ids is empty")
+            return
+
+        # 如果datas和ids不匹配，则返回
+        if len(datas) != len(ids):
+            print("datas and ids are not matched")
+            return
+
+        # 生成sql语句
+        set_clause = ", ".join([f"{col}=%s" for col in columns])
+        sql = f"UPDATE {self.tablename} SET {set_clause} WHERE ID=%s;"
+
+        print("-" * 80)
+        print("start update data where columns: " + ", ".join(columns))
+
+        total = 0
+        success = 0
+        failed = 0
+        faileds = []
+
+        for id, data in zip(ids, datas):
+            total += 1
+
+            try:
+                self.cursor.execute(sql, data + [id])
+                self.conn.commit()
+                print("update success: " + str(id))
+                success += 1
+
+            except pymysql.MySQLError as e:
+                print("update failed: " + str(id))
+                print(f"Error: {e}")
+                faileds.append(id)
+                failed += 1
+
+        print(f"update done, {total} records in total, {success} records updated, {failed} records failed")
+        print("=" * 80)
+
+        return
+
+    # 查询数据
+    def select(self, column="", condition=""):
+        ids = self.selectID(condition)
+        data = self.selectData(ids, column)
+        return data
+
+    def selectID(self, condition=""):
+        # 如果没有连接数据库，则返回空列表
+        if not self.databasename:
+            print("please connect to the database first")
+            return []
+
+        if not self.tablename:
+            print("please set the table first")
+            return []
+
+        # 如果条件为空，则查询所有数据
+        if condition == "":
+            condition = "1=1"
+
+        sql = f"SELECT ID FROM {self.tablename} WHERE %s ;"
+        print("-" * 80)
+        print("start select id where condition: " + condition)
+
+        try:
+            self.cursor.execute(sql, [condition])
+            ids = self.cursor.fetchall()
+
+        except pymysql.MySQLError as e:
+            print(f"Error: {e}")
+            print("=" * 80)
+            return []
+
+        print(f"select done, {len(ids)} records selected")
+        print("=" * 80)
+        return ids
+
+    def selectData(self, ids, column=""):
+        # 如果没有连接数据库，则返回空列表
+        if not self.databasename:
+            print("please connect to the database first")
+            return []
+
+        if not self.tablename:
+            print("please set the table first")
+            return []
+
+        # 如果ids为空，则返回空列表
+        if not ids:
+            print("ids is empty")
+            return []
+
+        # 如果条件为空，则查询所有数据
+        if column == []:
+            column = ["*"]
+
+        # 生成sql语句
+        columnstr = ",".join(column)
+        sql = f"SELECT {columnstr} FROM {self.tablename} WHERE ID=%s ;"
+
+        print("-" * 80)
+        print("start select data where column: " + column)
+
+        try:
+            data = []
+            for id in ids:
+                self.cursor.execute(sql, [id])
+                data.append(self.cursor.fetchone())
+
+        except pymysql.MySQLError as e:
+            print(f"Error: {e}")
+            print("=" * 80)
+            return []
+
+        print(f"select done, {len(data)} records selected")
+        print("=" * 80)
+        return data
+
+    # 导出数据到文件
+    def export_to_file(self, file_path, condition=""):
+        # 如果没有连接数据库，则返回
+        if not self.databasename:
+            print("please connect to the database first")
+            return
+
+        if not self.tablename:
+            print("please set the table first")
+            return
+
+        # 如果条件为空，则查询所有数据
+        if condition == "":
+            condition = "1=1"
+
+        sql = f"SELECT * FROM {self.tablename} WHERE {condition};"
+
+        print("-" * 80)
+        print("start export data where sql: " + sql)
+
+        try:
+            self.cursor.execute(sql)
+            rows = self.cursor.fetchall()
+            headers = [i[0] for i in self.cursor.description]
+
+            with open(file_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(headers)
+                writer.writerows(rows)
+
+            print(f"found {len(rows)} records")
+            print(f"data has been exported to {file_path}")
+
+        except pymysql.MySQLError as e:
+            print(f"Error: {e}")
+
+        print("=" * 80)
 
 
 if __name__ == "__main__":
-    # main()
-    # export_to_file("F:/test.csv")
+    db = DB()
+    inp = input("enter the name of the database: ")
+    db.connect(inp)
+    inp = input("enter the name of the table: ")
+    db.set_tablename(inp)
+
+    while True:
+        inp = input("enter select condition: ")
+
+        if inp == "q":
+            break
+
+        db.export_to_file("./ignore/data.csv", inp)
+
+    inp = input("press any key to quit: ")
     pass
