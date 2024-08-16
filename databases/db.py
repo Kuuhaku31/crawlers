@@ -24,7 +24,7 @@ import csv
 
 import pymysql
 
-import __init__ as init
+import databases.__init__ as init
 
 
 # 数据库操作类
@@ -104,8 +104,23 @@ class DB:
 
             print("disconnected from " + self.host + "." + self.databasename)
 
+    """
+    datas = [
+    [
+    value01,
+    value02,
+    ...
+    ],
+    [
+    value01,
+    value02,
+    ...
+    ],
+    ...
+    """
+
     # 插入数据
-    def insert(self, column, datas):
+    def insert(self, columns, datas, check):  # check是检查是否重复的列 如[0,1,3]表示要检查第0,1,3列是否重复
         # 如果没有连接数据库，则返回
         if not self.databasename:
             print("please connect to the database first")
@@ -116,34 +131,45 @@ class DB:
             return
 
         # 如果data为空，则返回
-        if column == [] or datas == []:
-            print("column or data is empty")
+        if columns == [] or datas == [] or check == []:
+            print("column or data or check is empty")
             return
 
-        # 生成sql语句
-        columns = ",".join(column)
-        values = ",".join(["%s"] * len(datas))
-        sql = f"INSERT INTO {self.tablename} ({columns}) VALUES ({values}) ;"
+        columns_str = ",".join(columns)
+        check_str = " AND ".join([f"{columns[i]}=%s" for i in check])
 
         print("-" * 80)
-        print("start insert data where column: " + columns)
+        print("start insert data where column: " + columns_str)
 
         total = 0
         success = 0
+        exist = 0
         failed = 0
         faileds = []
 
         for data in datas:
             total += 1
 
+            # 生成sql语句
+            data_str = "(" + ",".join(["%s" for _ in range(len(columns))]) + ")"
+            sql = f"INSERT INTO {self.tablename} ({columns_str}) VALUES {data_str};"
+            sql_check = f"SELECT ID FROM {self.tablename} WHERE {check_str};"
+
             try:
+                # 检查是否重复
+                self.cursor.execute(sql_check, [data[i] for i in check])
+                result = self.cursor.fetchall()
+                if result:
+                    exist += 1
+                    continue
+
                 self.cursor.execute(sql, data)
                 self.conn.commit()
-                print("insert success: " + data)
+                print("insert success: " + str(data))
                 success += 1
 
             except pymysql.MySQLError as e:
-                print("insert failed: " + data)
+                print("insert failed: " + str(data))
                 print(f"Error: {e}")
                 faileds.append(data)
                 failed += 1
@@ -238,7 +264,7 @@ class DB:
             total += 1
 
             try:
-                self.cursor.execute(sql, data + [id])
+                self.cursor.execute(sql, [data] + [id])
                 self.conn.commit()
                 print("update success: " + str(id))
                 success += 1
@@ -255,9 +281,9 @@ class DB:
         return
 
     # 查询数据
-    def select(self, column="", condition=""):
+    def select(self, columns="", condition=""):
         ids = self.selectID(condition)
-        data = self.selectData(ids, column)
+        data = self.selectData(ids, columns)
         return data
 
     def selectID(self, condition=""):
@@ -315,7 +341,7 @@ class DB:
         sql = f"SELECT {columnstr} FROM {self.tablename} WHERE ID=%s ;"
 
         print("-" * 80)
-        print("start select data where column: " + column)
+        print("start select data where column: " + str(column))
 
         try:
             data = []

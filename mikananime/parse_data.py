@@ -11,17 +11,18 @@ import mikananime.__init__ as init
 """
 数据库表结构
 
-create table torrents(
+create table mikantorrents(
 
-ID                      int primary key auto_increment,
-type                    varchar(255),
-title                   varchar(500) not null,
-description             text,
-link                    varchar(255),
-enclosureLink           varchar(255) not null,
-infoHash                varchar(40) not null,
-pubDate                 varchar(255) not null
-savePath                varchar(255)
+id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+type varchar(2048),
+pubDate varchar(2048),
+title varchar(2048),
+description text,
+link varchar(2048),
+enclosureLink varchar(2048) not null,
+infoHash varchar(2048),
+savePath varchar(2048),
+isDownloaded bool default 0
 
 );
 

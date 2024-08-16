@@ -24,6 +24,13 @@ ADD COLUMN type VARCHAR(255) DEFAULT 'null' AFTER id;
 ALTER TABLE torrents
 DROP COLUMN status;
 
+-- 删除特定条件的数据
+DELETE FROM mikantorrents
+WHERE id>207;
+
+-- 重置id自增
+ALTER TABLE mikantorrents AUTO_INCREMENT = 208;
+
 
 --修改
 UPDATE employees
